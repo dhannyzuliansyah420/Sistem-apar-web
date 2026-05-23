@@ -1,1 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head><title>Scan APAR</title></head>
+<body>
+    <h2 id="judul">Membaca Lokasi...</h2>
+    <script>
+        // 1. Ambil ID dari link barcode (contoh: web.com/scan.html?id=APAR-152)
+        const urlParams = new URLSearchParams(window.location.search);
+        const idApar = urlParams.get('id');
+        document.getElementById("judul").innerText = "Inspeksi: " + idApar;
 
+        // 2. Paksa HP nyalain GPS
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const gps = pos.coords.latitude + "," + pos.coords.longitude;
+            
+            // 3. Update data di Supabase (Mirip script God Mode, tapi method PATCH)
+            const respon = await fetch(`URL_SUPABASE_LU/rest/v1/master_apar?id_apar=eq.${idApar}`, {
+                method: 'PATCH',
+                headers: {
+                    'apikey': 'KEY_SUPABASE_LU',
+                    'Authorization': `Bearer KEY_SUPABASE_LU`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: 'Aman & Standby', koordinat_gps: gps })
+            });
+
+            if(respon.ok) {
+                document.body.innerHTML = "<h1 style='color:green'>BERHASIL DI-SCAN!</h1><p>GPS: "+gps+"</p>";
+            }
+        }, () => {
+            alert("Goblok, izinkan akses lokasi di browser lu!");
+        });
+    </script>
+</body>
+</html>
